@@ -1,73 +1,88 @@
 import streamlit as st
-import pickle
-import re
 import nltk
-import spacy
-import numpy as np
-import pandas as pd
-import nltk_setup
-from sklearn.feature_extraction.text import CountVectorizer
-from nltk.stem import WordNetLemmatizer
-from nltk.stem import SnowballStemmer
+import re
+import pickle
 from nltk.corpus import stopwords
+from nltk.stem import SnowballStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-import warnings
-warnings.filterwarnings("ignore")
+
+# --- FIX: Download NLTK data ---
+# This handles the LookupError by ensuring the required packages are downloaded.
+@st.cache_resource
+def download_nltk_data():
+    """Downloads necessary NLTK data models."""
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        nltk.download('stopwords')
+    try:
+        nltk.data.find('corpora/wordnet')
+    except LookupError:
+        nltk.download('wordnet')
+
+download_nltk_data()
+# --- END OF FIX ---
 
 
-# Force download NLTK data (safe on Streamlit Cloud)
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
-
-# Load the trained model and vectorizer
+# --- App Functions ---
+# (Assuming you have these model and vectorizer files saved)
 try:
-    with open('xgb_model.pkl', 'rb') as f:
-        xgb_model = pickle.load(f)
-    with open('vectorizer.pkl', 'rb') as f:
-        vectorizer = pickle.load(f)
+    with open('model.pkl', 'rb') as model_file:
+        model = pickle.load(model_file)
+    with open('vectorizer.pkl', 'rb') as vectorizer_file:
+        vectorizer = pickle.load(vectorizer_file)
 except FileNotFoundError:
-    st.error("Model or vectorizer file not found. Please ensure 'xgb_model.pkl' and 'vectorizer.pkl' are in the same directory.")
+    st.error("Model or vectorizer file not found. Please ensure 'model.pkl' and 'vectorizer.pkl' are in the same directory.")
     st.stop()
 
 
-# Initialize lemmatizer and stemmer
-le = WordNetLemmatizer()
+# Initialize tools
 sb = SnowballStemmer("english")
+le = WordNetLemmatizer()
 stop_words = set(stopwords.words("english"))
 
-# Text preprocessing function
+
 def text_preprocessing(text):
-    text = text.lower()
-    text = re.sub(r"@\w+", "", text)
-    text = re.sub(r"http\S+", "", text)
-    text = re.sub(r"[^a-z\s]+", "", text)
+    """Cleans, tokenizes, and lemmatizes the input text."""
+    if not text or not isinstance(text, str):
+        return ""
+    
+    text = re.sub("[^a-zA-Z]", " ", text) # Keep only letters
+    text = text.lower() # Convert to lowercase
+    
+    # This is the line that originally caused the error
     clean = " ".join([le.lemmatize(sb.stem(t), pos="v") for t in word_tokenize(text) if t not in stop_words])
     return clean
 
-# Streamlit app
-st.title("Airline Tweet Sentiment Analysis")
 
-user_input = st.text_area("Enter your tweet about the airline:")
+# --- Streamlit App Interface ---
+st.title("✈️ Airline Tweet Sentiment Analysis")
+st.write("Enter a tweet about an airline to analyze its sentiment.")
 
-if st.button("Predict Sentiment"):
-    if user_input:
-        # Preprocess the input
+user_input = st.text_area("Your tweet:", placeholder="e.g., 'My flight was wonderfully smooth and the crew was amazing!'")
+
+if st.button("Analyze Sentiment"):
+    if user_input.strip():
+        # 1. Preprocess the input
         preprocessed_input = text_preprocessing(user_input)
-
-        # Vectorize the input
-        input_vectorized = vectorizer.transform([preprocessed_input])
-
-        # Predict the sentiment
-        prediction = xgb_model.predict(input_vectorized)
-
-        # Map prediction to sentiment label
-        sentiment_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
-        predicted_sentiment = sentiment_map[prediction[0]]
-
-        st.write(f"Predicted Sentiment: {predicted_sentiment}")
+        
+        # 2. Vectorize the preprocessed text
+        vectorized_input = vectorizer.transform([preprocessed_input])
+        
+        # 3. Predict the sentiment
+        prediction = model.predict(vectorized_input)
+        
+        # 4. Display the result
+        st.subheader("Analysis Result:")
+        if prediction[0] == 0:
+            st.error("Negative Sentiment 😞")
+        elif prediction[0] == 1:
+            st.warning("Neutral Sentiment 😐")
+        else:
+            st.success("Positive Sentiment 😊")
     else:
-        st.write("Please enter a tweet to predict the sentiment.")
-
-
-
+        st.warning("Please enter a tweet to analyze.")
