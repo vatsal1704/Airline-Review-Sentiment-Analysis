@@ -91,25 +91,17 @@ from nltk.tokenize import word_tokenize
 import warnings
 warnings.filterwarnings("ignore")
 
-import nltk_setup  # Ensures the downloads are triggered on launch
+# Import and run NLTK setup
+import nltk_setup  # This downloads 'punkt', 'stopwords', and 'wordnet'
 
-# --- Force download required NLTK resources with error handling ---
+# --- Validate required NLTK resources are available ---
 try:
-    nltk.download('punkt', quiet=True)
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
-except Exception as e:
-    st.error("Failed to download NLTK resources. Please check internet connection or app permissions.")
-    st.stop()
-
-# --- Validate required resources are available ---
-try:
-    _ = word_tokenize("test")  # Test tokenizer works
+    _ = word_tokenize("test")  # Check tokenizer works
     stop_words = set(stopwords.words("english"))
     le = WordNetLemmatizer()
     sb = SnowballStemmer("english")
 except LookupError as e:
-    st.error("Required NLTK data not found. Please make sure 'punkt', 'stopwords', and 'wordnet' are available.")
+    st.error("Required NLTK data not found. Please ensure 'punkt', 'stopwords', and 'wordnet' are available.")
     st.stop()
 
 # --- Load model and vectorizer ---
@@ -132,7 +124,7 @@ def text_preprocessing(text):
     return clean
 
 # --- Streamlit UI ---
-st.title("Airline Tweet Sentiment Analysis")
+st.title("✈️ Airline Tweet Sentiment Analysis")
 
 user_input = st.text_area("Enter your tweet about the airline:")
 
@@ -143,10 +135,9 @@ if st.button("Predict Sentiment"):
         prediction = xgb_model.predict(input_vectorized)
         sentiment_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
         predicted_sentiment = sentiment_map[prediction[0]]
-        st.write(f"Predicted Sentiment: {predicted_sentiment}")
+        st.success(f"Predicted Sentiment: **{predicted_sentiment}**")
     else:
         st.warning("Please enter a tweet to predict the sentiment.")
-
 
 
 
