@@ -4,7 +4,7 @@ import re
 import pickle
 import os
 
-# --- THE DEFINITIVE FIX: Download data locally ---
+# --- THE DEFINITIVE FIX: Download all data locally ---
 
 # Define a local directory to store NLTK data
 LOCAL_NLTK_DATA_PATH = os.path.join(os.path.dirname(__file__), "nltk_data")
@@ -21,10 +21,16 @@ def download_nltk_packages():
     Downloads required NLTK packages to the local directory.
     This function is cached to run only once.
     """
-    packages = ['punkt', 'stopwords', 'wordnet']
+    # ADDED 'punkt_tab' TO THE LIST OF PACKAGES
+    packages = ['punkt', 'punkt_tab', 'stopwords', 'wordnet']
+    
     for package in packages:
         try:
-            nltk.data.find(f"tokenizers/{package}" if package == 'punkt' else f"corpora/{package}")
+            # Adjust find path for different package types
+            if package.startswith('punkt'):
+                nltk.data.find(f"tokenizers/{package}")
+            else:
+                nltk.data.find(f"corpora/{package}")
         except LookupError:
             nltk.download(package, download_dir=LOCAL_NLTK_DATA_PATH)
 
