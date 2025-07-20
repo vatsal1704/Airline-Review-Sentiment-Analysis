@@ -17,15 +17,17 @@ warnings.filterwarnings("ignore")
 # Download NLTK data
 try:
     nltk.data.find('tokenizers/punkt')
-except nltk.downloader.DownloadError:
+except LookupError:
     nltk.download('punkt')
+
 try:
     nltk.data.find('corpora/stopwords')
-except nltk.downloader.DownloadError:
+except LookupError:
     nltk.download('stopwords')
+
 try:
     nltk.data.find('corpora/wordnet')
-except nltk.downloader.DownloadError:
+except LookupError:
     nltk.download('wordnet')
 
 
@@ -48,10 +50,10 @@ stop_words = set(stopwords.words("english"))
 # Text preprocessing function
 def text_preprocessing(text):
     text = text.lower()
-    text = re.sub(r"@\w+" , "" , text)
-    text = re.sub(r"http\S+" , "" , text)
-    text = re.sub(r"[^a-z\s]+" , "" , text)
-    clean = " ".join([le.lemmatize(sb.stem(t) , pos = "v") for t in word_tokenize(text) if t not in stop_words])
+    text = re.sub(r"@\w+", "", text)
+    text = re.sub(r"http\S+", "", text)
+    text = re.sub(r"[^a-z\s]+", "", text)
+    clean = " ".join([le.lemmatize(sb.stem(t), pos="v") for t in word_tokenize(text) if t not in stop_words])
     return clean
 
 # Streamlit app
