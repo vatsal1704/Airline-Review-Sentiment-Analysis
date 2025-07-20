@@ -154,7 +154,7 @@ st.title("✈️ Airline Tweet Sentiment Analysis")
 
 try:
     # Load model and vectorizer
-    with open('xgb_pkl', 'rb') as model_file:
+    with open('xgb_model.pkl', 'rb') as model_file:
         model = pickle.load(model_file)
     with open('vectorizer.pkl', 'rb') as vectorizer_file:
         vectorizer = pickle.load(vectorizer_file)
