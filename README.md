@@ -1,30 +1,29 @@
-# ✈️ Airline Review Sentiment Analysis using NLP
+# ✈️ Airline Review Sentiment Analysis
 
-## 📌 Project Overview
-The Airline Review Sentiment Analysis project leverages Natural Language Processing (NLP) to analyze and classify customer reviews into **positive**, **negative**, or **neutral** sentiments. The objective is to help airlines gain actionable insights from passenger feedback, improving customer experience and operational efficiency.
+This project analyzes airline-related tweets to determine the **sentiment** behind each post — whether it's **positive**, **negative**, or **neutral**. By leveraging natural language processing (NLP) and machine learning, the model offers insights into public perception of airline services based on real-time Twitter data.
 
-## 🔗 Live Project Link
-[👉 Click here for the live project](# ✈️ Airline Review Sentiment Analysis using NLP
+## 🧠 What It's About
 
-## 📌 Project Overview
-The Airline Review Sentiment Analysis project leverages Natural Language Processing (NLP) to analyze and classify customer reviews into **positive**, **negative**, or **neutral** sentiments. The objective is to help airlines gain actionable insights from passenger feedback, improving customer experience and operational efficiency.
+The core goal is to process and classify tweets related to major airlines using sentiment analysis techniques. The dataset used includes real tweets from airline passengers, labeled with sentiment tags. This allows for training and evaluating a model that can automatically detect how travelers feel about their flying experience.
 
-## 🔗 Live Project Link
-[👉 Click here for the live project]([https://airline-review-sentiment-analysis.streamlit.app/])
+### 🔑 Key Features
+- Dataset based on Twitter airline reviews  
+- NLP preprocessing (tokenization, cleaning, stopword removal)  
+- Sentiment classification using machine learning models  
+- Interactive web app for testing custom tweet input  
+- Real-time sentiment prediction output  
+
+## 🚀 Live Demo
+
+👉 [Click here to view the live demo](https://airline-review-sentiment-analysis.streamlit.app/)
+
+---
 
 ## 📝 Project Description
 This web-based application processes and analyzes textual reviews submitted by airline passengers. Using NLP techniques and a trained machine learning model, the system classifies each review into one of three sentiment categories: **positive**, **neutral**, or **negative**.
 
-### ✨ Key Features:
-- Interactive UI to submit and analyze reviews.
-- Real-time sentiment classification using pre-trained NLP models.
-- Clean visualization of results for better interpretation.
-- Scalable design suitable for integration with airline feedback systems.
 
-By accurately understanding customer sentiments, the tool can assist airlines in identifying pain points and areas for improvement, ultimately enhancing customer satisfaction and loyalty.
-- Interactive UI to submit and analyze reviews.
-- Real-time sentiment classification using pre-trained NLP models.
-- Clean visualization of results for better interpretation.
-- Scalable design suitable for integration with airline feedback systems.
 
-By accurately understanding customer sentiments, the tool can assist airlines in identifying pain points and areas for improvement, ultimately enhancing customer satisfaction and loyalty.
+This project is ideal for understanding customer sentiment in the aviation industry and can be extended to other domains with similar social media-based feedback.
+
+Feel free to explore, contribute, or provide feedback
