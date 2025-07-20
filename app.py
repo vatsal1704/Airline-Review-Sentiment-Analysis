@@ -24,7 +24,7 @@ download_nltk_data()
 # --- App Functions ---
 # Load the saved model and vectorizer
 try:
-    with open('model.pkl', 'rb') as model_file:
+    with open('xgb_model.pkl', 'rb') as model_file:
         model = pickle.load(model_file)
     with open('vectorizer.pkl', 'rb') as vectorizer_file:
         vectorizer = pickle.load(vectorizer_file)
