@@ -6,17 +6,26 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
-# --- FIX: Download NLTK data ---
-# This function downloads the required NLTK packages.
-# The @st.cache_resource decorator ensures this runs only once when the app starts.
+# --- THIS IS THE CRUCIAL FIX ---
+# This function downloads all necessary NLTK data.
+# The decorator @st.cache_resource ensures this runs only ONCE when the app starts.
 @st.cache_resource
 def download_nltk_data():
-    """Downloads necessary NLTK data models."""
-    nltk.download('punkt')
-    nltk.download('stopwords')
-    nltk.download('wordnet')
+    """Downloads all necessary NLTK data models."""
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt', quiet=True)
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        nltk.download('stopwords', quiet=True)
+    try:
+        nltk.data.find('corpora/wordnet')
+    except LookupError:
+        nltk.download('wordnet', quiet=True)
 
-# Call the function to ensure the data is available before the app runs
+# We call the function right at the start to ensure everything is downloaded.
 download_nltk_data()
 # --- END OF FIX ---
 
@@ -24,12 +33,13 @@ download_nltk_data()
 # --- App Functions ---
 # Load the saved model and vectorizer
 try:
-    with open('xgb_model.pkl', 'rb') as model_file:
+    # Use the correct model name you specified: xgb_pkl
+    with open('xgb_pkl', 'rb') as model_file:
         model = pickle.load(model_file)
     with open('vectorizer.pkl', 'rb') as vectorizer_file:
         vectorizer = pickle.load(vectorizer_file)
 except FileNotFoundError:
-    st.error("Model or vectorizer file not found. Please ensure 'model.pkl' and 'vectorizer.pkl' are in the same directory as this script.")
+    st.error("Model or vectorizer file not found! 🚨 Please ensure 'xgb_pkl' and 'vectorizer.pkl' are uploaded to your project directory.")
     st.stop()
 
 
@@ -47,7 +57,7 @@ def text_preprocessing(text):
     text = re.sub("[^a-zA-Z]", " ", text) # Keep only letters
     text = text.lower() # Convert to lowercase
     
-    # The line below is where the original error occurred
+    # This line requires the NLTK data to be downloaded
     clean = " ".join([le.lemmatize(sb.stem(t), pos="v") for t in word_tokenize(text) if t not in stop_words])
     return clean
 
@@ -56,7 +66,7 @@ def text_preprocessing(text):
 st.title("✈️ Airline Tweet Sentiment Analysis")
 st.write("Enter a tweet about an airline to analyze its sentiment.")
 
-user_input = st.text_area("Your tweet:", placeholder="e.g., 'The flight was delayed but the crew was fantastic!'")
+user_input = st.text_area("Your tweet:", placeholder="e.g., 'My flight was wonderfully smooth and the crew was amazing!'")
 
 if st.button("Analyze Sentiment"):
     if user_input.strip():
