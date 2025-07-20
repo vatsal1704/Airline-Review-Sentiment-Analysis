@@ -91,6 +91,8 @@ from nltk.tokenize import word_tokenize
 import warnings
 warnings.filterwarnings("ignore")
 
+import nltk_setup  # Ensures the downloads are triggered on launch
+
 # --- Force download required NLTK resources with error handling ---
 try:
     nltk.download('punkt', quiet=True)
