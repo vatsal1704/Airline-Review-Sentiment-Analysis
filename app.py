@@ -83,6 +83,9 @@ import re
 import nltk
 import numpy as np
 import pandas as pd
+# Import and run NLTK setup
+import nltk_setup  # This downloads 'punkt', 'stopwords', and 'wordnet'
+
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import SnowballStemmer
@@ -91,8 +94,6 @@ from nltk.tokenize import word_tokenize
 import warnings
 warnings.filterwarnings("ignore")
 
-# Import and run NLTK setup
-import nltk_setup  # This downloads 'punkt', 'stopwords', and 'wordnet'
 
 # --- Validate required NLTK resources are available ---
 try:
