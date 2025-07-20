@@ -2,91 +2,94 @@ import streamlit as st
 import nltk
 import re
 import pickle
-from nltk.corpus import stopwords
-from nltk.stem import SnowballStemmer, WordNetLemmatizer
-from nltk.tokenize import word_tokenize
+import os # Import the 'os' module to check for file paths
 
-# --- THIS IS THE CRUCIAL FIX ---
-# This function downloads all necessary NLTK data.
-# The decorator @st.cache_resource ensures this runs only ONCE when the app starts.
-@st.cache_resource
-def download_nltk_data():
-    """Downloads all necessary NLTK data models."""
-    try:
-        nltk.data.find('tokenizers/punkt')
-    except LookupError:
-        nltk.download('punkt', quiet=True)
-    try:
-        nltk.data.find('corpora/stopwords')
-    except LookupError:
-        nltk.download('stopwords', quiet=True)
-    try:
-        nltk.data.find('corpora/wordnet')
-    except LookupError:
-        nltk.download('wordnet', quiet=True)
+# --- DIAGNOSTIC MODE: Force NLTK Download ---
+st.set_page_config(layout="wide")
+st.title("👨‍⚕️ NLTK Downloader Diagnostics")
 
-# We call the function right at the start to ensure everything is downloaded.
-download_nltk_data()
-# --- END OF FIX ---
+# Define the download directory within the app's running environment
+# This is a common path used by Streamlit Cloud
+nltk_data_path = "/home/adminuser/nltk_data"
+nltk.data.path.append(nltk_data_path)
 
+st.info(f"Step 1: NLTK will try to download data to: **{nltk_data_path}**")
 
-# --- App Functions ---
-# Load the saved model and vectorizer
+# --- Download Punkt ---
+st.subheader("1. Tokenizer Model ('punkt')")
 try:
-    # Use the correct model name you specified: xgb_pkl
+    nltk.data.find("tokenizers/punkt", paths=[nltk_data_path])
+    st.success("✅ 'punkt' is already downloaded.")
+except LookupError:
+    st.warning("🚨 'punkt' not found. Attempting download...")
+    try:
+        nltk.download('punkt', download_dir=nltk_data_path)
+        # Verify download
+        if os.path.exists(os.path.join(nltk_data_path, 'tokenizers/punkt')):
+             st.success("✅ 'punkt' downloaded successfully!")
+        else:
+             st.error("❌ 'punkt' download command ran, but files are still missing.")
+    except Exception as e:
+        st.error(f"An error occurred during 'punkt' download: {e}")
+
+# --- Download Stopwords ---
+st.subheader("2. Stopwords Corpus")
+try:
+    nltk.data.find("corpora/stopwords", paths=[nltk_data_path])
+    st.success("✅ 'stopwords' are already downloaded.")
+except LookupError:
+    st.warning("🚨 'stopwords' not found. Attempting download...")
+    try:
+        nltk.download('stopwords', download_dir=nltk_data_path)
+        # Verify download
+        if os.path.exists(os.path.join(nltk_data_path, 'corpora/stopwords')):
+             st.success("✅ 'stopwords' downloaded successfully!")
+        else:
+             st.error("❌ 'stopwords' download command ran, but files are still missing.")
+    except Exception as e:
+        st.error(f"An error occurred during 'stopwords' download: {e}")
+
+st.divider()
+
+# --- Main App Logic ---
+st.title("✈️ Airline Tweet Sentiment Analysis")
+
+# This part will only run if the downloads above succeed
+try:
+    # Initialize tools using the specified path
+    from nltk.corpus import stopwords
+    from nltk.stem import SnowballStemmer, WordNetLemmatizer
+    from nltk.tokenize import word_tokenize
+
+    stop_words = set(stopwords.words("english"))
+    sb = SnowballStemmer("english")
+    le = WordNetLemmatizer()
+
+    # Load model and vectorizer
     with open('xgb_model.pkl', 'rb') as model_file:
         model = pickle.load(model_file)
     with open('vectorizer.pkl', 'rb') as vectorizer_file:
         vectorizer = pickle.load(vectorizer_file)
-except FileNotFoundError:
-    st.error("Model or vectorizer file not found! 🚨 Please ensure 'xgb_pkl' and 'vectorizer.pkl' are uploaded to your project directory.")
-    st.stop()
 
+    def text_preprocessing(text):
+        text = re.sub("[^a-zA-Z]", " ", text).lower()
+        clean = " ".join([le.lemmatize(sb.stem(t), pos="v") for t in word_tokenize(text) if t not in stop_words])
+        return clean
 
-# Initialize text processing tools
-sb = SnowballStemmer("english")
-le = WordNetLemmatizer()
-stop_words = set(stopwords.words("english"))
-
-
-def text_preprocessing(text):
-    """Cleans, tokenizes, and lemmatizes the input text."""
-    if not text or not isinstance(text, str):
-        return ""
-    
-    text = re.sub("[^a-zA-Z]", " ", text) # Keep only letters
-    text = text.lower() # Convert to lowercase
-    
-    # This line requires the NLTK data to be downloaded
-    clean = " ".join([le.lemmatize(sb.stem(t), pos="v") for t in word_tokenize(text) if t not in stop_words])
-    return clean
-
-
-# --- Streamlit App Interface ---
-st.title("✈️ Airline Tweet Sentiment Analysis")
-st.write("Enter a tweet about an airline to analyze its sentiment.")
-
-user_input = st.text_area("Your tweet:", placeholder="e.g., 'My flight was wonderfully smooth and the crew was amazing!'")
-
-if st.button("Analyze Sentiment"):
-    if user_input.strip():
-        # 1. Preprocess the input
-        preprocessed_input = text_preprocessing(user_input)
-        
-        # 2. Vectorize the preprocessed text
-        vectorized_input = vectorizer.transform([preprocessed_input])
-        
-        # 3. Predict the sentiment
-        prediction = model.predict(vectorized_input)
-        
-        # 4. Display the result
-        st.subheader("Analysis Result:")
-        # Assuming 0: Negative, 1: Neutral, 2: Positive
-        if prediction[0] == 0:
-            st.error("Negative Sentiment 😞")
-        elif prediction[0] == 1:
-            st.warning("Neutral Sentiment 😐")
+    # Streamlit Interface
+    user_input = st.text_area("Your tweet:", placeholder="e.g., 'My flight was wonderfully smooth!'")
+    if st.button("Analyze Sentiment"):
+        if user_input.strip():
+            preprocessed_input = text_preprocessing(user_input)
+            vectorized_input = vectorizer.transform([preprocessed_input])
+            prediction = model.predict(vectorized_input)
+            st.subheader("Analysis Result:")
+            if prediction[0] == 0: st.error("Negative Sentiment 😞")
+            elif prediction[0] == 1: st.warning("Neutral Sentiment 😐")
+            else: st.success("Positive Sentiment 😊")
         else:
-            st.success("Positive Sentiment 😊")
-    else:
-        st.warning("Please enter a tweet to analyze.")
+            st.warning("Please enter a tweet to analyze.")
+
+except Exception as e:
+    st.error(f"A critical error occurred after the download phase: {e}")
+    st.error("This likely means one of the downloads failed silently. Please review the diagnostic messages above.")
