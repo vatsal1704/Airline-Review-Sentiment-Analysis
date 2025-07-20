@@ -8,7 +8,7 @@ from nltk.tokenize import word_tokenize
 
 # --- FIX: Download NLTK data ---
 # This function downloads the required NLTK packages.
-# The @st.cache_resource decorator ensures this runs only once.
+# The @st.cache_resource decorator ensures this runs only once when the app starts.
 @st.cache_resource
 def download_nltk_data():
     """Downloads necessary NLTK data models."""
@@ -16,7 +16,7 @@ def download_nltk_data():
     nltk.download('stopwords')
     nltk.download('wordnet')
 
-# Call the function to ensure data is available
+# Call the function to ensure the data is available before the app runs
 download_nltk_data()
 # --- END OF FIX ---
 
@@ -24,12 +24,12 @@ download_nltk_data()
 # --- App Functions ---
 # Load the saved model and vectorizer
 try:
-    with open('xgb_model.pkl', 'rb') as model_file:
+    with open('model.pkl', 'rb') as model_file:
         model = pickle.load(model_file)
     with open('vectorizer.pkl', 'rb') as vectorizer_file:
         vectorizer = pickle.load(vectorizer_file)
 except FileNotFoundError:
-    st.error("Model or vectorizer file not found. Please ensure 'xgb_pkl' and 'vectorizer.pkl' are in the same directory as this script.")
+    st.error("Model or vectorizer file not found. Please ensure 'model.pkl' and 'vectorizer.pkl' are in the same directory as this script.")
     st.stop()
 
 
